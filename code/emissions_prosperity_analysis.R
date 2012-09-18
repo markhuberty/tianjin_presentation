@@ -244,7 +244,7 @@ dev.off()
 ## growth not 1:1 correlated
 
 
-test <- foreach(x=countries.of.interest, .combine=rbind) %do% {
+df.norm <- foreach(x=countries.of.interest, .combine=rbind) %do% {
   df.country <- df.sub[df.sub$nation ==  x,]
   df.country$eng.pc.norm <- df.country$eng.pc.kgoe /
     df.country$eng.pc.kgoe[df.country$year == 1981]
@@ -259,32 +259,36 @@ test <- foreach(x=countries.of.interest, .combine=rbind) %do% {
 
 }  
 
-## df.china$em.tot.norm <-
-##   df.china$pcgdp / df.china$pcgdp[df.china$year == 1981]
 
-df.china <- melt(df.china[,c("nation", "year", "pc.em.norm",
-                             "pcgdp.norm", "eng.pc.norm", )],
-                 id.var=c("nation", "year")
-                 )
-levels(df.china$variable) <- c("Per capita emissions",
-                               "Per capita GDP",
-                               "Per capita energy consumption"
-                               )
+df.norm <- melt(df.norm[,c("nation", "year", "pc.em.norm",
+                           "pcgdp.norm", "eng.pc.norm",
+                           "tot.em.norm"
+                           )
+                        ],
+                id.var=c("nation", "year")
+                )
 
-plot.china.norm <- ggplot(df.china,
-                          aes(x=year,
-                              y=value,
-                              group=variable,
-                              colour=variable
+levels(df.norm$variable) <- c("Per capita emissions",
+                              "Per capita GDP",
+                              "Per capita energy consumption",
+                              "Total emissions"
                               )
-                          ) +
+df.norm$nation <- capwords(df.norm$nation)
+
+plot.norm <- ggplot(df.norm,
+                    aes(x=year,
+                        y=value,
+                        group=variable,
+                        colour=variable
+                        )
+                    ) +
   geom_line() +
   scale_x_continuous("Year") +
   scale_y_continuous("Per-capita measures, (1981 = 1)") +
   scale_colour_brewer("Meaures", palette="Dark2") +
-  facet_wrap( ~ nation, scales="free")
+  facet_wrap( ~ nation)
 
-print(plot.china.norm)
+print(plot.norm)
 
 
 plot(df.china$eng.pc.norm ~ df.china$year,
